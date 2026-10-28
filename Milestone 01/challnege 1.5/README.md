@@ -28,3 +28,4 @@ Submit: PR link + video drive link
 Go to openrouter.ai → sign up → copy your API key → paste into `.env`
 
 Free credits are available on signup. If credits run out, get a Gemini key from aistudio.google.com (free, no card required) and update the base URL in `src/callAI.js`.
+

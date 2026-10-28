@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const { callAI } = require('./callAI');
 const fs = require('fs');
@@ -27,7 +28,7 @@ app.post('/review', async (req, res) => {
         const feedback = await callAI(systemPrompt, code);
         res.json({ feedback });
     } catch (error) {
-        console.error('Code review error:', error.message);
+       console.error('Code review error:', error.response ? error.response.data : error.message);
         res.status(500).json({ error: 'AI Review failed. Check your API key and network.' });
     }
 });
