@@ -11,8 +11,9 @@ FocusForge is a lightweight productivity application designed to help users mana
 - View a list of existing tasks
 - Mark tasks as completed
 
-### Motivation Mode
-A built-in feature that displays random motivational quotes intended to keep users inspired while working.
+### Task Progress
+- See completed and remaining task counts at a glance
+- Track completion with a progress bar that updates as tasks change
 
 ---
 
@@ -81,21 +82,13 @@ The application should now be running locally.
 
 ## Project Goal
 
-FocusForge is designed to help users stay organized and productive by managing their daily tasks.
-
-The application currently includes a feature called Motivation Mode, which displays motivational quotes in the interface.
+FocusForge is designed to help users stay organized and productive by managing their tasks. The dashboard's progress tracker summarizes task completion using the tasks already loaded in the application.
 
 ---
 
 ## Your Challenge
 
-During a recent product review, the team raised questions about the usefulness of the Motivation Mode feature.
-
-Although the feature was originally introduced to encourage productivity, it is unclear whether displaying motivational quotes actually helps users manage and complete their tasks more effectively.
-
-Your objective is to investigate the current implementation of this feature and evaluate whether it meaningfully contributes to the product's goal.
-
-If the feature does not provide real value, consider how the application could be improved to better support focused and productive work.
+The original Motivation Mode displayed a random motivational quote. This implementation replaces it with a task progress tracker, so the dashboard provides direct feedback about users' actual work.
 
 Your solution should integrate with the existing codebase and improve the overall product experience without breaking the current functionality of the application.
 
