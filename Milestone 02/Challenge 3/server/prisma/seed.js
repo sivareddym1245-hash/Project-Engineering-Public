@@ -1,5 +1,4 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const prisma = require('../db');
 
 async function main() {
   // Clear existing data
@@ -9,15 +8,10 @@ async function main() {
   // Seed tasks
   await prisma.task.createMany({
     data: [
-      { title: 'Finish assignment', completed: false },
-      { title: 'Review lecture notes', completed: true },
+      { title: 'Finish assignment', completed: false, isImportant: true },
+      { title: 'Review lecture notes', completed: true, completedAt: new Date(), isImportant: true },
       { title: 'Complete coding challenge', completed: false },
     ],
-  });
-
-  // Seed initial score
-  await prisma.score.create({
-    data: { value: 40 },
   });
 
   console.log('Database seeded successfully!');

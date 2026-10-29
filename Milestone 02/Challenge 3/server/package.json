@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
+    "test": "node --test",
     "prisma:seed": "node prisma/seed.js"
   },
   "prisma": {
@@ -17,10 +18,13 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@prisma/adapter-pg": "^7.4.2",
     "@prisma/client": "^7.4.2",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.7.1",
+    "pg": "^8.23.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.14",

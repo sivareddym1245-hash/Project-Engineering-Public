@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Layout, CheckSquare, ListTodo } from 'lucide-react';
+import { Layout, CheckSquare, ListTodo, Sparkles } from 'lucide-react';
 
 const Navbar = () => {
   return (
@@ -21,6 +21,10 @@ const Navbar = () => {
           <NavLink to="/tasks" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
             <ListTodo size={18} />
             <span>Tasks</span>
+          </NavLink>
+          <NavLink to="/planner" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+            <Sparkles size={18} />
+            <span>AI Planner</span>
           </NavLink>
         </div>
 
