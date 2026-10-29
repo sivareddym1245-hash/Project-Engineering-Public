@@ -6,20 +6,43 @@ import { ListTodo, Search, Filter } from 'lucide-react';
 const Tasks = () => {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   const getTasks = async () => {
     try {
       const data = await fetchTasks();
       setTasks(data);
-      setLoading(false);
+      setError('');
     } catch (err) {
       console.error('Error fetching tasks:', err);
+      setError(err.message);
+    } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    getTasks();
+    let active = true;
+    fetchTasks()
+      .then((data) => {
+        if (active) {
+          setTasks(data);
+          setError('');
+        }
+      })
+      .catch((err) => {
+        if (active) {
+          console.error('Error fetching tasks:', err);
+          setError(err.message);
+        }
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   return (
@@ -41,6 +64,8 @@ const Tasks = () => {
         <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
           Loading tasks...
         </div>
+      ) : error ? (
+        <p className="form-error" role="alert">{error}</p>
       ) : (
         <div className="task-list">
           {tasks.length === 0 ? (

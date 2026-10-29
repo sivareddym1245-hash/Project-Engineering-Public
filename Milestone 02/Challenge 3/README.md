@@ -1,87 +1,84 @@
 # TaskNest
 
-TaskNest is a lightweight task management application designed to help users organize their daily tasks.
+TaskNest is a task manager for making important work visible, building a consistent completion habit, and deciding what to focus on next.
 
-Users can create tasks, mark them as completed, and track their progress through a dashboard.
+## The problem
 
-The application also includes a Productivity Score, which attempts to represent how productive the user has been while using the system.
+The problem I set out to solve is the difficulty of identifying which tasks matter and staying consistent without understanding how day-to-day actions affect progress. An unexplained productivity score does not help someone decide what to do next. TaskNest makes task importance visible, explains how completed work earns points, and shows a completion streak.
 
-## Tech Stack
+## Product and AI feature
 
-### Frontend
-React (Vite)
+TaskNest lets you create, prioritize, complete, and remove tasks. Its AI Planner turns a goal and your open tasks into a short set of suggested next steps. Important tasks are included first. The AI only recommends; it never creates, edits, or completes a task for you.
 
-### Backend
-Node.js + Express
+The planner calls OpenAI's `gpt-4o-mini` model from the backend. The backend function `generateTaskPlan` is in [`server/services/aiPlanner.js`](./server/services/aiPlanner.js); `POST /ai/plan` is routed through [`server/routes/ai.js`](./server/routes/ai.js) and handled by [`server/controllers/aiController.js`](./server/controllers/aiController.js). `OPENAI_API_KEY` stays on the server and is never bundled into the frontend. The backend limits planner requests to 10 per IP every 15 minutes.
 
-### Database
-PostgreSQL
+## Productivity score
 
-### ORM
-Prisma
+The score is derived from completed tasks instead of being incremented as a side effect of API calls:
 
-## Getting Started
+- Completed regular task: **10 points**
+- Completed important task: **20 points**
+- An unfinished task: **0 points**
 
-### 1. Clone the Repository
-```bash
-git clone <repository-url>
-cd tasknest
-```
+The consecutive-day streak counts UTC calendar days with at least one completed task. These rules live in the pure, deterministic `calculateProductivity` function in [`server/utils/scoreHelper.js`](./server/utils/scoreHelper.js). Keeping calculation separate from database reads makes the rules easy to test with fixed task data and a fixed clock; creating, reopening, or deleting a task cannot accidentally award duplicate points.
 
-### 2. Backend Setup
-Navigate to the server directory.
-```bash
-cd server
-npm install
-```
+## AI-assisted code and intentional exclusions
 
-Configure the database connection in `prisma.config.ts`.
+AI assistance in this iteration drafted the backend planner service/controller and the React planner page. The task CRUD, Prisma model, dashboard, and productivity scoring implementation were already in the project; the score formula is tested separately from the AI call. Review [`server/services/aiPlanner.test.js`](./server/services/aiPlanner.test.js) for provider-request, missing-key, provider-error, and empty-output cases.
 
-Run database migrations.
-```bash
-npx prisma migrate dev
-```
+This version intentionally excludes user accounts, calendar/deadline integrations, automatic task changes, persistent AI conversation history, and AI-generated task creation. The model receives the submitted goal and up to 30 open task titles with importance flags; do not enter passwords or sensitive information.
 
-Start the backend server.
-```bash
-npm run dev
-```
+## Model cost estimate
 
-### 3. Frontend Setup
-Navigate to the client directory.
-```bash
-cd client
-npm install
-npm run dev
-```
+Estimate for **100 planner requests per month**, assuming about **1,000 input tokens** (system instructions and task context) and **300 output tokens** per request:
 
-The frontend will run locally and connect to the backend server.
+- Input: `100 × 1,000 ÷ 1,000,000 × $0.15 = $0.015`
+- Output: `100 × 300 ÷ 1,000,000 × $0.60 = $0.018`
+- **Estimated model usage: $0.015 + $0.018 = $0.033/month (about $0.03).**
 
-## The Situation
+This estimate uses the published GPT-4o mini rates of $0.15 per million input tokens and $0.60 per million output tokens. Actual charges vary with prompt size, usage, provider pricing, and taxes. It excludes web hosting, PostgreSQL, and any usage above this estimate. See [OpenAI API pricing](https://openai.com/api/pricing/).
 
-The product team recently reviewed the Productivity Score feature.
+## Walkthrough
 
-The feature was originally implemented based on the following client request:
+[`TaskNest-Walkthrough.mp4`](./TaskNest-Walkthrough.mp4) is a computer-narrated local visual walkthrough. It demonstrates the dashboard, task list, planner UI, scoring-function design, backend AI flow, and cost estimate. To be explicit, it uses sample tasks and a simulated planner response; it is not a public-site recording or a live OpenAI demonstration.
 
-“Add a productivity system so users can see how productive they are.
-It should consider important tasks and help users stay consistent.”
+## Run locally
 
-However, after reviewing the system, engineers noticed several problems.
+Requirements: Node.js 20+ and a PostgreSQL database.
 
-The behavior of the productivity score is difficult to interpret.
+1. Configure the backend environment:
 
-It is not clear what actions influence the score or how the score should represent productivity.
+   ```powershell
+   cd server
+   Copy-Item .env.example .env
+   ```
 
-Additionally, the requirement mentions important tasks, but the system currently does not support any way to mark tasks as important.
+   Set `DATABASE_URL` in `server/.env`. Add an OpenAI API key to `OPENAI_API_KEY` to use the planner; without it, the rest of the app runs but the planner returns a clear configuration error.
 
-## Your Mission
+2. Install dependencies, sync the database schema, and start the backend:
 
-You must investigate the existing implementation of the productivity system and determine whether it behaves meaningfully.
+   ```powershell
+   npm install
+   npx prisma db push
+   npm run dev
+   ```
 
-While exploring the system, pay attention to:
+   `GET http://localhost:5000/health` returns `{"status":"ok"}` when the database is ready and `503` otherwise.
 
-• how the productivity score is calculated
-• what actions affect the score
-• whether the implementation matches the original requirement
+3. In a second terminal, start the frontend:
 
-If you discover inconsistencies or missing functionality, improve the system so the behavior becomes clearer and more meaningful.
+   ```powershell
+   cd client
+   Copy-Item .env.example .env
+   npm install
+   npm run dev
+   ```
+
+   Set `VITE_API_URL` in `client/.env` to the backend origin when it is not `http://localhost:5000`.
+
+## Deployment status
+
+- Frontend: **Not deployed**
+- Backend: **Not deployed**
+
+There are no live TaskNest URLs to verify yet. Deployment requires a public PostgreSQL database, an OpenAI API key saved as a backend-only secret, and frontend/backend hosting configuration. For deployment, configure `DATABASE_URL`, `OPENAI_API_KEY`, and `OPENAI_MODEL` on the backend, and `VITE_API_URL` on the frontend; rebuild the frontend after setting its API URL. Do not commit `.env` files or API keys.

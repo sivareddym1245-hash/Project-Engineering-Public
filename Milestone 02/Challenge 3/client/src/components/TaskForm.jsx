@@ -4,16 +4,25 @@ import { Plus } from 'lucide-react';
 
 const TaskForm = ({ onTaskCreated }) => {
   const [title, setTitle] = useState('');
+  const [isImportant, setIsImportant] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!title.trim()) return;
+    setIsSubmitting(true);
+    setError('');
     try {
-      await createTask(title);
+      await createTask(title, isImportant);
       setTitle('');
+      setIsImportant(false);
       onTaskCreated();
     } catch (err) {
       console.error('Error creating task:', err);
+      setError(err.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -30,14 +39,23 @@ const TaskForm = ({ onTaskCreated }) => {
             className="styled-input"
           />
         </div>
-        <button type="submit" className="primary-button ">
+        <label className="important-option">
+          <input
+            type="checkbox"
+            checked={isImportant}
+            onChange={(e) => setIsImportant(e.target.checked)}
+          />
+          <span>Important task (worth 20 points)</span>
+        </label>
+        <button type="submit" className="primary-button" disabled={isSubmitting}>
           <Plus size={20} strokeWidth={3} />
-          <span>Quick Add</span>
+          <span>{isSubmitting ? 'Adding...' : 'Quick Add'}</span>
         </button>
       </form>
+      {error && <p className="form-error" role="alert">{error}</p>}
       <div style={{ marginTop: '2rem', padding: '1rem', borderTop: '1px solid #f1f5f9' }}>
         <p className="text-muted" style={{ fontSize: '0.85rem' }}>
-          Assigning tasks helps our AI calculate your productivity score more accurately.
+          Completed tasks earn 10 points, or 20 points when marked important.
         </p>
       </div>
     </div>
